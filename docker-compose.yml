@@ -1,0 +1,33 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: energy
+      MYSQL_USER: energy
+      MYSQL_PASSWORD: energy_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_pass"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: mysql+pymysql://energy:energy_pass@db:3306/energy
+      # لتفعيل تنبيه البريد (اختياري):
+      # SMTP_HOST: smtp.gmail.com
+      # SMTP_USER: you@gmail.com
+      # SMTP_PASSWORD: app-password
+      # ALERT_EMAIL_TO: you@gmail.com
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
